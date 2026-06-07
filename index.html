@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epoch</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --primary: #C8A96E;
+  --primary-dim: #8B6E3A;
+  --bg: #0A0806;
+  --bg2: #110E09;
+  --bg3: #1A1510;
+  --surface: rgba(255,220,150,0.05);
+  --surface2: rgba(255,220,150,0.09);
+  --border: rgba(200,169,110,0.18);
+  --border2: rgba(200,169,110,0.35);
+  --text: #F0E8D8;
+  --text-dim: rgba(240,232,216,0.5);
+  --text-muted: rgba(240,232,216,0.3);
+  --font-title: 'Cinzel', serif;
+  --font-ui: 'DM Sans', sans-serif;
+  --glow: rgba(200,169,110,0.15);
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── Page system ── */
+.page { display: none; }
+.page.active { display: flex; }
+
+/* ── Ambient background ── */
+.ambient {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(180,120,30,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 20%, rgba(100,60,10,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 80% at 50% 50%, rgba(30,20,5,0.4) 0%, transparent 70%);
+}
+
+/* grain overlay */
+.ambient::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Particles ── */
+.particle {
+  position: fixed; border-radius: 50%;
+  background: var(--primary);
+  pointer-events: none; z-index: 0;
+  animation: drift var(--dur, 20s) ease-in-out infinite var(--del, 0s);
+  opacity: 0;
+}
+@keyframes drift {
+  0%   { transform: translate(0, 0);    opacity: 0; }
+  10%  { opacity: var(--op, 0.15); }
+  90%  { opacity: var(--op, 0.15); }
+  100% { transform: translate(var(--tx, 20px), var(--ty, -60px)); opacity: 0; }
+}
+
+/* ── Clock ring ── */
+.clock-ring {
+  position: fixed; top: 20px; right: 24px; z-index: 10;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.clock-time {
+  font-family: var(--font-title);
+  font-size: 1.2rem; letter-spacing: 0.1em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+.clock-date { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; }
+
+/* ── HOME PAGE ── */
+#home-page {
+  flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; position: relative; z-index: 1;
+}
+
+.home-inner {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; width: 100%; max-width: 560px; padding: 0 24px;
+}
+
+.logo {
+  font-family: var(--font-title);
+  font-size: 7rem; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 6px;
+  text-shadow: 0 0 60px rgba(200,169,110,0.25), 0 0 120px rgba(200,169,110,0.1);
+  animation: logoFloat 4s ease-in-out infinite;
+}
+@keyframes logoFloat {
+  0%,100% { transform: translateY(0); text-shadow: 0 0 60px rgba(200,169,110,0.25), 0 0 120px rgba(200,169,110,0.1); }
+  50% { transform: translateY(-6px); text-shadow: 0 8px 60px rgba(200,169,110,0.35), 0 0 120px rgba(200,169,110,0.15); }
+}
+
+.tagline {
+  font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 40px;
+  font-weight: 400;
+  min-height: 18px; transition: opacity 0.6s ease;
+}
+
+.search-wrap {
+  position: relative; width: 100%; margin-bottom: 28px;
+}
+.search-ico {
+  position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+  color: var(--primary); opacity: 0.7; pointer-events: none;
+}
+.search {
+  width: 100%;
+  padding: 18px 24px 18px 56px;
+  font-family: var(--font-ui); font-size: 1rem; font-weight: 400;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.search::placeholder { color: var(--text-muted); }
+.search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(200,169,110,0.1), 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+.btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 100px; border: none;
+  font-family: var(--font-ui); font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; transition: transform 0.1s, opacity 0.2s;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn:hover { opacity: 0.8; transform: scale(1.02); }
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--primary);
+  color: #0A0806;
+  border-color: transparent;
+}
+.btn-icon { font-size: 1rem; }
+
+footer {
+  position: fixed; bottom: 20px; left: 0; right: 0;
+  text-align: center; font-size: 0.78rem;
+  color: var(--text-muted); z-index: 10;
+  min-height: 20px; transition: opacity 0.6s;
+  pointer-events: none;
+}
+
+/* ── INNER PAGES (Games, Movies, Apps, Settings, YouTube) ── */
+.inner-page {
+  flex-direction: column; height: 100vh; position: relative; z-index: 1;
+  animation: fadeIn 0.25s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Topbar */
+.topbar {
+  display: flex; align-items: center; gap: 0;
+  height: 60px; padding: 0 24px; flex-shrink: 0;
+  background: rgba(10,8,6,0.9);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  position: relative; z-index: 20;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; color: var(--primary);
+  font-family: var(--font-ui); font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; padding: 8px 20px 8px 0;
+  border-right: 1px solid var(--border);
+  margin-right: 20px; transition: opacity 0.2s;
+}
+.topbar-back:hover { opacity: 0.7; }
+.topbar-logo {
+  font-family: var(--font-title);
+  font-size: 1.4rem; color: var(--primary);
+  letter-spacing: 0.1em; margin-right: 10px;
+}
+.topbar-subtitle {
+  font-size: 0.72rem; color: var(--text-muted);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 500; margin-right: auto;
+}
+.topbar-search-wrap { position: relative; }
+.topbar-search {
+  padding: 8px 16px 8px 38px;
+  font-family: var(--font-ui); font-size: 0.82rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 100px; color: var(--text); outline: none;
+  width: 220px; transition: border-color 0.2s, width 0.3s;
+}
+.topbar-search:focus { border-color: var(--primary); width: 280px; }
+.topbar-search::placeholder { color: var(--text-muted); }
+.topbar-search-ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--primary); opacity: 0.6; }
+
+/* Content area */
+.content {
+  flex: 1; overflow-y: auto; padding: 32px 36px;
+  position: relative;
+}
+
+/* ── GRID ── */
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+/* Cards */
+.card {
+  padding: 24px 18px 20px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--surface2), rgba(0,0,0,0.3));
+  border: 1px solid var(--border);
+  cursor: pointer; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border2);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 24px var(--glow);
+}
+.card:active { transform: translateY(0); }
+.card-icon { font-size: 1.8rem; }
+.card-label {
+  font-family: var(--font-title); font-size: 0.85rem; letter-spacing: 0.06em;
+  color: var(--primary);
+}
+.card-sub { font-size: 0.68rem; color: var(--text-muted); font-weight: 400; margin-top: -6px; }
+
+/* Media cards */
+.mcard {
+  border-radius: 16px; overflow: hidden; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.mcard:hover {
+  transform: translateY(-4px);
+  border-color: var(--border2);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 20px var(--glow);
+}
+.mthumb {
+  width: 100%; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem;
+  background: linear-gradient(135deg, rgba(200,169,110,0.06), rgba(0,0,0,0.4));
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.mthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mthumb-badge {
+  position: absolute; bottom: 6px; right: 8px;
+  font-size: 0.58rem; background: rgba(0,0,0,0.8);
+  padding: 2px 7px; border-radius: 10px; color: var(--primary);
+}
+.minfo { padding: 12px 14px; }
+.mtitle { font-size: 0.78rem; font-weight: 600; margin-bottom: 3px; color: var(--text); line-height: 1.3; }
+.mmeta { font-size: 0.63rem; color: var(--text-muted); font-weight: 400; }
+.mbadge {
+  display: inline-block; margin-top: 7px;
+  padding: 2px 9px; border-radius: 20px; font-size: 0.6rem;
+  font-weight: 500; letter-spacing: 0.04em;
+  background: rgba(200,169,110,0.1); color: var(--primary);
+  border: 1px solid rgba(200,169,110,0.2);
+}
+
+/* ── SECTION HEADER ── */
+.section-hdr {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-title {
+  font-family: var(--font-title); font-size: 1rem; letter-spacing: 0.1em;
+  color: var(--primary);
+}
+.section-action {
+  font-size: 0.7rem; color: var(--text-muted); cursor: pointer;
+  transition: color 0.2s;
+}
+.section-action:hover { color: var(--primary); }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab {
+  padding: 7px 18px; border-radius: 100px;
+  font-size: 0.73rem; font-weight: 500; cursor: pointer;
+  color: var(--text-muted); background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-ui); transition: 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: #0A0806; background: var(--primary);
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(200,169,110,0.25);
+}
+
+/* ── MOVIE PLAYER OVERLAY ── */
+.player-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+  z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.player-overlay.active { display: flex; }
+.player-container {
+  width: 90vw; height: 88vh; max-width: 1200px; max-height: 700px;
+  background: #000; border-radius: 16px; overflow: hidden;
+  position: relative; box-shadow: 0 0 60px rgba(0,0,0,1), 0 0 100px var(--glow);
+  border: 1px solid var(--border2);
+}
+.player-close {
+  position: absolute; top: 12px; right: 12px; z-index: 101;
+  background: rgba(0,0,0,0.8); border: none; color: #fff;
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  font-size: 20px; display: flex; align-items: center; justify-content: center;
+  transition: 0.2s;
+}
+.player-close:hover { background: rgba(200,0,0,0.85); }
+.player-iframe { width: 100%; height: 100%; border: none; }
+
+/* ── SUNLIT SHELL ── */
+.sunlit-shell {
+  position: fixed; inset: 0; z-index: 500;
+  display: none; flex-direction: column; background: #000;
+}
+.sunlit-shell.active { display: flex; }
+.sunlit-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px; background: rgba(10,8,6,0.98);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.sunlit-back-btn {
+  padding: 7px 18px; border-radius: 100px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--primary);
+  font-family: var(--font-ui); font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 6px;
+}
+.sunlit-back-btn:hover { border-color: var(--border2); }
+.sunlit-newtab-btn {
+  padding: 7px 18px; border-radius: 100px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim);
+  font-family: var(--font-ui); font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; transition: 0.15s;
+}
+.sunlit-newtab-btn:hover { color: var(--text); }
+.sunlit-label { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; margin-left: 4px; }
+.sunlit-frame { flex: 1; border: none; width: 100%; display: block; }
+
+/* ── YouTube ── */
+.yt-id-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 16px; align-items: center; }
+.yt-search-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 16px; }
+.yt-player { width: 100%; margin-bottom: 16px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.yt-player:empty { display: none; }
+.yt-player iframe { display: block; width: 100%; height: 360px; border: 0; }
+.yt-status { font-size: 0.7rem; color: var(--text-muted); min-height: 20px; margin-bottom: 10px; }
+.yt-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.yt-card {
+  border-radius: 14px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: 0.2s;
+}
+.yt-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.yt-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
+.yt-card-body { padding: 10px 12px; }
+.yt-card-body h3 { font-size: 0.72rem; font-weight: 500; line-height: 1.35; margin-bottom: 4px; color: var(--text); }
+.yt-card-body p { font-size: 0.62rem; color: var(--text-muted); margin-bottom: 9px; }
+.yt-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.yt-card-actions button {
+  padding: 5px 9px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-dim);
+  font-size: 0.6rem; font-family: var(--font-ui); cursor: pointer; transition: 0.15s;
+}
+.yt-card-actions button:hover { color: var(--primary); border-color: var(--border2); }
+
+/* ── Input ── */
+.input {
+  width: 100%; padding: 12px 20px;
+  font-family: var(--font-ui); font-size: 0.88rem; font-weight: 400;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 100px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input::placeholder { color: var(--text-muted); }
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(200,169,110,0.08); }
+
+/* ── Settings panels ── */
+.settings-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 22px 24px; margin-bottom: 16px;
+}
+.settings-title {
+  font-family: var(--font-title); font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--primary); margin-bottom: 16px;
+}
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.toggle-info strong { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.toggle-info span { font-size: 0.68rem; color: var(--text-muted); line-height: 1.4; }
+.toggle { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track {
+  position: absolute; inset: 0; border-radius: 26px;
+  background: rgba(200,169,110,0.1); border: 1px solid var(--border);
+  cursor: pointer; transition: 0.25s;
+}
+.toggle input:checked + .toggle-track { background: var(--primary); border-color: var(--primary); }
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--text); top: 3px; left: 3px;
+  transition: 0.25s; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.toggle input:checked + .toggle-track::after { transform: translateX(20px); background: #0A0806; }
+
+.presets-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.preset-btn {
+  padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); font-size: 0.68rem;
+  font-family: var(--font-ui); font-weight: 500; cursor: pointer; transition: 0.15s;
+}
+.preset-btn:hover { color: var(--primary); border-color: var(--border2); }
+.color-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.cgroup { display: flex; gap: 8px; align-items: center; }
+.clbl { font-size: 0.68rem; color: var(--text-muted); }
+.cswatch {
+  width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.2);
+  position: relative; overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5); transition: 0.2s;
+}
+.cswatch:hover { transform: scale(1.1); }
+.cswatch input[type=color] {
+  position: absolute; inset: -8px; width: calc(100% + 16px); height: calc(100% + 16px);
+  opacity: 0; cursor: pointer; border: none;
+}
+.status-note {
+  font-size: 0.68rem; color: rgba(200,169,110,0.5);
+  margin-top: 10px; display: none;
+}
+/* Movie status / page nav */
+.mv-nav { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.mv-status { font-size: 0.7rem; color: var(--text-muted); flex: 1; }
+
+/* ── Movie grid inner scroll ── */
+.mv-scroll { max-height: 520px; overflow-y: auto; overflow-x: hidden; border-radius: 12px; }
+
+/* ── Responsive ── */
+@media(max-width: 760px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .yt-results { grid-template-columns: repeat(2, 1fr); }
+  .content { padding: 20px 18px; }
+  .topbar { padding: 0 16px; }
+  .logo { font-size: 5rem; }
+  .topbar-search { display: none; }
+}
+@media(max-width: 480px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: 1fr; }
+  .yt-results { grid-template-columns: 1fr; }
+  .logo { font-size: 4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient -->
+<div class="ambient"></div>
+
+<!-- Clock -->
+<div class="clock-ring">
+  <div class="clock-time" id="clock">00:00:00</div>
+  <div class="clock-date" id="datestr"></div>
+</div>
+
+<!-- Movie player overlay -->
+<div class="player-overlay" id="playerOverlay">
+  <div class="player-container">
+    <button class="player-close" onclick="closePlayer()">✕</button>
+    <iframe class="player-iframe" id="playerIframe"></iframe>
+  </div>
+</div>
+
+<!-- Sunlit shell -->
+<div class="sunlit-shell" id="sunlitShell">
+  <div class="sunlit-bar">
+    <button class="sunlit-back-btn" onclick="closeSunlitOS()">← Back</button>
+    <button class="sunlit-newtab-btn" onclick="sunlitOpenNewTab()">↗ New Tab</button>
+    <span class="sunlit-label">🌤 Sunlit OS</span>
+  </div>
+  <iframe class="sunlit-frame" id="sunlitFrame"></iframe>
+</div>
+
+<!-- Wavelength shell -->
+<div class="sunlit-shell" id="wavelengthShell">
+  <div class="sunlit-bar">
+    <button class="sunlit-back-btn" onclick="closeWavelength()">← Back</button>
+    <button class="sunlit-newtab-btn" onclick="wavelengthOpenNewTab()">↗ New Tab</button>
+    <span class="sunlit-label">🎵 Wavelength</span>
+  </div>
+  <iframe class="sunlit-frame" id="wavelengthFrame"></iframe>
+</div>
+
+<!-- ══════════════════════════════ HOME ══════════════════════════════ -->
+<div class="page active" id="home-page">
+  <div class="home-inner">
+    <div class="logo">Epoch</div>
+    <div class="tagline" id="rotating-tagline">A Time Machine for Everything</div>
+
+    <div class="search-wrap">
+      <svg class="search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search" id="homeSearch" placeholder="Search the timeline...">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary btn-icon" onclick="showPage('games-page')">🎮 Games</button>
+      <button class="btn btn-icon" onclick="showPage('movies-page')">🎬 Movies</button>
+      <button class="btn btn-icon" onclick="showPage('apps-page')">🧩 Apps</button>
+      <button class="btn btn-icon" onclick="showPage('settings-page')">⚙ Settings</button>
+    </div>
+  </div>
+  <footer id="rotating-footer">made with love by bored middle schoolers, for everyone else</footer>
+</div>
+
+<!-- ══════════════════════════════ GAMES ══════════════════════════════ -->
+<div class="page inner-page" id="games-page" style="display:none">
+  <div class="topbar">
+    <button class="topbar-back" onclick="showPage('home-page')">← Home</button>
+    <span class="topbar-logo">Epoch</span>
+    <span class="topbar-subtitle">Games</span>
+  </div>
+  <div class="content">
+    <div class="section-hdr"><span class="section-title">Browser Games</span></div>
+    <div class="grid-3">
+      <div class="mcard" onclick="window.open('https://play2048.co/','_blank')">
+        <div class="mthumb">🔢</div>
+        <div class="minfo"><div class="mtitle">2048</div><div class="mmeta">Puzzle · Slide tiles</div><div class="mbadge">Free · Browser</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://slither.io/','_blank')">
+        <div class="mthumb">🐍</div>
+        <div class="minfo"><div class="mtitle">Slither.io</div><div class="mmeta">Multiplayer · Snake</div><div class="mbadge">Free · Browser</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://agar.io/','_blank')">
+        <div class="mthumb">🦠</div>
+        <div class="minfo"><div class="mtitle">Agar.io</div><div class="mmeta">Multiplayer · Strategy</div><div class="mbadge">Free · Browser</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://www.nytimes.com/games/wordle/index.html','_blank')">
+        <div class="mthumb">🟩</div>
+        <div class="minfo"><div class="mtitle">Wordle</div><div class="mmeta">Word puzzle · Daily</div><div class="mbadge">Free · NYT</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://www.chess.com/play/computer','_blank')">
+        <div class="mthumb">♟️</div>
+        <div class="minfo"><div class="mtitle">Chess</div><div class="mmeta">Strategy · vs Computer</div><div class="mbadge">Free · Chess.com</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://www.geoguessr.com/','_blank')">
+        <div class="mthumb">🌍</div>
+        <div class="minfo"><div class="mtitle">GeoGuessr</div><div class="mmeta">Geography · Explore</div><div class="mbadge">Free tier</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://skribbl.io/','_blank')">
+        <div class="mthumb">🎨</div>
+        <div class="minfo"><div class="mtitle">Skribbl.io</div><div class="mmeta">Drawing · Multiplayer</div><div class="mbadge">Free · Browser</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://www.sporcle.com/','_blank')">
+        <div class="mthumb">🧠</div>
+        <div class="minfo"><div class="mtitle">Sporcle</div><div class="mmeta">Trivia · Quizzes</div><div class="mbadge">Free · Browser</div></div>
+      </div>
+      <div class="mcard" onclick="window.open('https://neal.fun/','_blank')">
+        <div class="mthumb">🎪</div>
+        <div class="minfo"><div class="mtitle">Neal.fun</div><div class="mmeta">Interactive · Misc</div><div class="mbadge">Free · Browser</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ MOVIES ══════════════════════════════ -->
+<div class="page inner-page" id="movies-page" style="display:none">
+  <div class="topbar">
+    <button class="topbar-back" onclick="showPage('home-page')">← Home</button>
+    <span class="topbar-logo">Epoch</span>
+    <span class="topbar-subtitle">Movies & TV</span>
+    <div class="topbar-search-wrap">
+      <svg class="topbar-search-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="topbar-search" id="mvSearchInput" placeholder="Search movies & shows..." autocomplete="off">
+    </div>
+  </div>
+  <div class="content">
+    <div class="tabs">
+      <div class="tab active" id="mvTabMovies" onclick="mvSwitchTab('movie')">Movies</div>
+      <div class="tab" id="mvTabTV" onclick="mvSwitchTab('tv')">TV & Shows</div>
+    </div>
+    <div id="mvStatus" class="mv-status" style="margin-bottom:10px;"></div>
+    <div class="mv-scroll">
+      <div id="mvGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;"></div>
+    </div>
+    <div class="mv-nav">
+      <button class="tab" onclick="mvPage(-1)" style="padding:5px 14px;font-size:.72rem;">← Prev</button>
+      <span id="mvPageLbl" style="font-size:.7rem;color:var(--text-muted);">Page 1</span>
+      <button class="tab" onclick="mvPage(1)" style="padding:5px 14px;font-size:.72rem;">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ APPS ══════════════════════════════ -->
+<div class="page inner-page" id="apps-page" style="display:none">
+  <div class="topbar">
+    <button class="topbar-back" onclick="showPage('home-page')">← Home</button>
+    <span class="topbar-logo">Epoch</span>
+    <span class="topbar-subtitle">Apps</span>
+  </div>
+  <div class="content">
+    <div class="section-hdr"><span class="section-title">Portals</span></div>
+    <div class="grid">
+      <a class="card" href="#" onclick="showPage('youtube-page');return false;">
+        <span class="card-icon">▶️</span><span class="card-label">YouTube</span><span class="card-sub">Search & play</span>
+      </a>
+      <a class="card" href="#" onclick="openSunlitOS();return false;">
+        <span class="card-icon">🌤</span><span class="card-label">Sunlit OS</span><span class="card-sub">Desktop env</span>
+      </a>
+      <a class="card" href="#" onclick="openWavelength();return false;">
+        <span class="card-icon">🎵</span><span class="card-label">Wavelength</span><span class="card-sub">Music player</span>
+      </a>
+      <a class="card" href="https://discord.com" target="_blank">
+        <span class="card-icon">💬</span><span class="card-label">Discord</span>
+      </a>
+      <a class="card" href="https://github.com" target="_blank">
+        <span class="card-icon">🐙</span><span class="card-label">GitHub</span>
+      </a>
+      <a class="card" href="https://twitter.com" target="_blank">
+        <span class="card-icon">🐦</span><span class="card-label">Twitter</span>
+      </a>
+      <a class="card" href="https://reddit.com" target="_blank">
+        <span class="card-icon">🤖</span><span class="card-label">Reddit</span>
+      </a>
+      <a class="card" href="https://notion.so" target="_blank">
+        <span class="card-icon">📝</span><span class="card-label">Notion</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ YOUTUBE ══════════════════════════════ -->
+<div class="page inner-page" id="youtube-page" style="display:none">
+  <div class="topbar">
+    <button class="topbar-back" onclick="showPage('apps-page')">← Apps</button>
+    <span class="topbar-logo">Epoch</span>
+    <span class="topbar-subtitle">YouTube</span>
+  </div>
+  <div class="content">
+    <div class="yt-id-row">
+      <input class="input" id="ytIdInput" placeholder="Video ID or YouTube URL" onkeydown="if(event.key==='Enter')ytPlayById()">
+      <button class="btn btn-primary" onclick="ytPlayById()">▶ Play</button>
+    </div>
+    <div class="yt-search-row">
+      <input class="input" id="ytSearchInput" placeholder="Search YouTube..." onkeydown="if(event.key==='Enter')ytSearchVideos()">
+      <button class="btn" onclick="ytSearchVideos()">Search</button>
+    </div>
+    <div id="ytPlayer" class="yt-player"></div>
+    <div id="ytStatus" class="yt-status"></div>
+    <div style="max-height:440px;overflow-y:auto;overflow-x:hidden;padding-right:4px;">
+      <div id="ytResults" class="yt-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ SETTINGS ══════════════════════════════ -->
+<div class="page inner-page" id="settings-page" style="display:none">
+  <div class="topbar">
+    <button class="topbar-back" onclick="showPage('home-page')">← Home</button>
+    <span class="topbar-logo">Epoch</span>
+    <span class="topbar-subtitle">Settings</span>
+  </div>
+  <div class="content">
+
+    <div class="settings-panel">
+      <div class="settings-title">Background Theme</div>
+      <div class="color-row">
+        <div class="cgroup"><span class="clbl">Color 1</span>
+          <div class="cswatch" id="sw1" style="background:#0A0806"><input type="color" value="#0A0806" id="c1" oninput="updateBg()"></div></div>
+        <div class="cgroup"><span class="clbl">Color 2</span>
+          <div class="cswatch" id="sw2" style="background:#1A1510"><input type="color" value="#1A1510" id="c2" oninput="updateBg()"></div></div>
+        <div class="cgroup"><span class="clbl">Color 3</span>
+          <div class="cswatch" id="sw3" style="background:#2A1E08"><input type="color" value="#2A1E08" id="c3" oninput="updateBg()"></div></div>
+      </div>
+      <div class="presets-row">
+        <button class="preset-btn" onclick="applyPreset('#0A0806','#1A1510','#2A1E08')">Amber</button>
+        <button class="preset-btn" onclick="applyPreset('#090b1a','#121c3d','#1f1745')">Deep Space</button>
+        <button class="preset-btn" onclick="applyPreset('#0a1a0d','#0d2e18','#0f3320')">Aurora</button>
+        <button class="preset-btn" onclick="applyPreset('#1a0a0a','#2e0d0d','#3a1010')">Red Dwarf</button>
+        <button class="preset-btn" onclick="applyPreset('#101010','#1a1a1a','#222222')">Void</button>
+        <button class="preset-btn" onclick="applyPreset('#001a2e','#003355','#004477')">Ocean</button>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">Privacy</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Auto-Hide Mode</strong>
+          <span>Opens Epoch in a clean about:blank tab and redirects this tab to Google. Requires popup permission for this site.</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="autoHideToggle" onchange="setAutoHide(this.checked)">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div id="autoHideStatus" class="status-note"></div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">Security</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Anti-Close Protection</strong>
+          <span>Shows a confirmation dialog when you try to close or leave this tab.</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="antiCloseToggle" onchange="setAntiClose(this.checked)">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">Hub</div>
+      <button class="btn" onclick="openHubInNewTab()">↗ Open Hub in New Tab</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const SUNLIT_OS_URL = 'sunlit_os.html';
+const WAVELENGTH_URL = 'wavelength.html';
+const YT_API_KEY = 'AIzaSyB7x5zyGdt3_9JnaIWqQYrvNkcB6lef_xA';
+const TMDB_API_KEY = 'ee533ebaec5bb9f6bb448a66c1d4ad08';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const TMDB_IMG = 'https://image.tmdb.org/t/p/w185';
+
+// ── Particles ──────────────────────────────────────────────────────────────
+(function(){
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const sz=Math.random()*2+0.8;
+    const tx=(Math.random()-0.5)*80,ty=-(Math.random()*100+40);
+    p.style.cssText=`width:${sz}px;height:${sz}px;`+
+      `left:${Math.random()*100}%;top:${Math.random()*100}%;`+
+      `--dur:${(Math.random()*20+12).toFixed(1)}s;`+
+      `--del:-${(Math.random()*15).toFixed(1)}s;`+
+      `--op:${(Math.random()*0.2+0.05).toFixed(2)};`+
+      `--tx:${tx.toFixed(0)}px;--ty:${ty.toFixed(0)}px;`;
+    document.body.appendChild(p);
+  }
+})();
+
+// ── Clock ──────────────────────────────────────────────────────────────────
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('datestr').textContent=n.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+}
+setInterval(tick,1000); tick();
+
+// ── Page routing ───────────────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>{
+    const isTarget = p.id===id;
+    p.style.display = isTarget ? (p.classList.contains('inner-page')?'flex':'flex') : 'none';
+    p.classList.toggle('active', isTarget);
+  });
+  if(id==='movies-page' && !mvLoaded) { mvLoaded=true; doMvLoad(); }
+  window.scrollTo && window.scrollTo(0,0);
+}
+
+// ── Search ─────────────────────────────────────────────────────────────────
+document.getElementById('homeSearch').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.value.trim())
+    window.open('https://www.google.com/search?q='+encodeURIComponent(e.target.value.trim()),'_blank');
+});
+
+// ── Auto-Hide ──────────────────────────────────────────────────────────────
+(function(){
+  var enabled=localStorage.getItem('ep_autohide');
+  if(enabled===null){localStorage.setItem('ep_autohide','1');enabled='1';}
+  var alreadyHidden=sessionStorage.getItem('ep_loaded');
+  function syncUI(){
+    var el=document.getElementById('autoHideToggle');
+    if(el) el.checked=(localStorage.getItem('ep_autohide')==='1');
+    var ac=document.getElementById('antiCloseToggle');
+    if(ac) ac.checked=(localStorage.getItem('ep_anticlose')==='1');
+  }
+  if(enabled==='1'&&!alreadyHidden){
+    var html=document.documentElement.outerHTML.replace("sessionStorage.getItem('ep_loaded')",'\'1\'');
+    var t=window.open('about:blank','_blank');
+    if(t){t.document.open();t.document.write(html);t.document.close();
+      try{t.sessionStorage.setItem('ep_loaded','1');}catch(e){}
+      location.replace('https://www.google.com'); return;
+    } else {
+      sessionStorage.setItem('ep_loaded','1');
+      document.addEventListener('DOMContentLoaded',function(){
+        syncUI();
+        var s=document.getElementById('autoHideStatus');
+        if(s){s.style.display='block';s.innerHTML='⚠ Popup blocked. Allow popups for this site, then reload.';}
+      }); return;
+    }
+  }
+  sessionStorage.setItem('ep_loaded','1');
+  document.addEventListener('DOMContentLoaded',syncUI);
+})();
+
+function setAutoHide(on){
+  localStorage.setItem('ep_autohide',on?'1':'0');
+  sessionStorage.removeItem('ep_loaded');
+  var s=document.getElementById('autoHideStatus');
+  if(s) s.style.display='none';
+}
+
+// ── Anti-Close ─────────────────────────────────────────────────────────────
+var _acActive=false;
+function _acHandler(e){e.preventDefault();e.returnValue='';return '';}
+function setAntiClose(on){
+  localStorage.setItem('ep_anticlose',on?'1':'0');
+  if(on&&!_acActive){window.addEventListener('beforeunload',_acHandler);_acActive=true;}
+  else if(!on&&_acActive){window.removeEventListener('beforeunload',_acHandler);_acActive=false;}
+}
+(function(){if(localStorage.getItem('ep_anticlose')==='1'){window.addEventListener('beforeunload',_acHandler);_acActive=true;}})();
+
+// ── Hub ────────────────────────────────────────────────────────────────────
+function openHubInNewTab(){
+  const html=document.documentElement.outerHTML;
+  const t=window.open('about:blank','_blank');
+  if(t){t.document.open();t.document.write(html);t.document.close();}
+  location.replace('https://www.google.com');
+}
+
+// ── Background ─────────────────────────────────────────────────────────────
+function updateBg(){
+  const a=document.getElementById('c1').value,b=document.getElementById('c2').value,c=document.getElementById('c3').value;
+  document.getElementById('sw1').style.background=a;
+  document.getElementById('sw2').style.background=b;
+  document.getElementById('sw3').style.background=c;
+  document.body.style.background=`linear-gradient(135deg,${a},${b},${c})`;
+}
+function applyPreset(a,b,c){
+  document.getElementById('c1').value=a;
+  document.getElementById('c2').value=b;
+  document.getElementById('c3').value=c;
+  updateBg();
+}
+
+// ── Movie player ───────────────────────────────────────────────────────────
+function playMovie(id,type){
+  const url=`https://cinesrc.st/embed/${type==='movie'?'movie':'tv'}/${id}`;
+  document.getElementById('playerIframe').src=url;
+  document.getElementById('playerOverlay').classList.add('active');
+}
+function closePlayer(){
+  document.getElementById('playerIframe').src='';
+  document.getElementById('playerOverlay').classList.remove('active');
+}
+document.getElementById('playerOverlay').addEventListener('click',function(e){if(e.target===this)closePlayer();});
+
+// ── Sunlit OS ──────────────────────────────────────────────────────────────
+var _sunlitHTML=null;
+async function openSunlitOS(){
+  const shell=document.getElementById('sunlitShell');
+  const frame=document.getElementById('sunlitFrame');
+  shell.classList.add('active');
+  if(_sunlitHTML){writeSunlit(frame,_sunlitHTML);return;}
+  try{
+    const r=await fetch(SUNLIT_OS_URL);
+    if(!r.ok) throw new Error('Not found');
+    _sunlitHTML=await r.text();
+    writeSunlit(frame,_sunlitHTML);
+  }catch{frame.src=SUNLIT_OS_URL;}
+}
+function writeSunlit(frame,html){
+  frame.src='';
+  const doc=frame.contentWindow||frame.contentDocument;
+  if(frame.contentDocument){frame.contentDocument.open();frame.contentDocument.write(html);frame.contentDocument.close();}
+  else frame.src='data:text/html;charset=utf-8,'+encodeURIComponent(html);
+}
+function closeSunlitOS(){document.getElementById('sunlitShell').classList.remove('active');document.getElementById('sunlitFrame').src='';}
+function sunlitOpenNewTab(){window.open(SUNLIT_OS_URL,'_blank');}
+
+// ── Wavelength ─────────────────────────────────────────────────────────────
+function openWavelength(){document.getElementById('wavelengthShell').classList.add('active');document.getElementById('wavelengthFrame').src=WAVELENGTH_URL;}
+function closeWavelength(){document.getElementById('wavelengthShell').classList.remove('active');document.getElementById('wavelengthFrame').src='';}
+function wavelengthOpenNewTab(){window.open(WAVELENGTH_URL,'_blank');}
+
+// ── YouTube ────────────────────────────────────────────────────────────────
+function ytExtractVideoId(raw){
+  let id=raw.trim();
+  try{const u=new URL(id);if(u.hostname.includes('youtu.be'))id=u.pathname.split('/').filter(Boolean).pop()||id;else id=u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop()||id;}catch(e){}
+  return id;
+}
+function ytPlayById(){const raw=document.getElementById('ytIdInput').value.trim();if(!raw)return;ytPlayVideo(ytExtractVideoId(raw));}
+function ytPlayVideo(id){document.getElementById('ytPlayer').innerHTML=`<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;document.getElementById('ytStatus').textContent='Playing video';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function ytSearchVideos(){
+  const q=document.getElementById('ytSearchInput').value.trim();if(!q)return;
+  const res=document.getElementById('ytResults');res.innerHTML='';
+  document.getElementById('ytStatus').textContent='Loading...';
+  try{
+    const url=`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&type=video&q=${encodeURIComponent(q)}&key=${YT_API_KEY}`;
+    const r=await fetch(url);const d=await r.json();res.innerHTML='';
+    if(!d.items||!d.items.length){document.getElementById('ytStatus').textContent='No results.';return;}
+    d.items.forEach(item=>{
+      const vid=item.id.videoId,title=esc(item.snippet.title),ch=esc(item.snippet.channelTitle),thumb=item.snippet.thumbnails.medium.url;
+      const card=document.createElement('div');card.className='yt-card';
+      card.innerHTML=`<img src="${thumb}" alt="${title}" loading="lazy"><div class="yt-card-body"><h3>${title}</h3><p>${ch}</p><div class="yt-card-actions"><button onclick="ytPlayVideo('${vid}')">▶ Play</button><button onclick="window.open('https://www.youtube.com/watch?v=${vid}','_blank')">Open ↗</button></div></div>`;
+      res.appendChild(card);
+    });
+    document.getElementById('ytStatus').textContent=d.items.length+' results';
+  }catch{document.getElementById('ytStatus').textContent='Error loading videos.';}
+}
+
+// ── TMDB Movies ────────────────────────────────────────────────────────────
+var mvLoaded=false,mvType='movie',mvCurPage=1,mvQuery='',mvDebounce=null,mvCache={},mvAbort=null;
+
+function mvSetStatus(t){var el=document.getElementById('mvStatus');if(el)el.textContent=t;}
+
+async function doMvLoad(){
+  mvSetStatus('Loading...');
+  var grid=document.getElementById('mvGrid');grid.innerHTML='';grid.style.pointerEvents='none';
+  var path=mvQuery.trim()?`/search/${mvType}?query=${encodeURIComponent(mvQuery)}&page=${mvCurPage}&include_adult=false`:`/${mvType}/popular?page=${mvCurPage}`;
+  if(mvCache[path]){renderMvGrid(mvCache[path]);return;}
+  if(mvAbort)mvAbort.abort();mvAbort=window.AbortController?new AbortController():null;
+  var sep=path.indexOf('?')===-1?'?':'&';
+  try{
+    const r=await fetch(TMDB_BASE+path+sep+'api_key='+TMDB_API_KEY,{signal:mvAbort?mvAbort.signal:undefined,cache:'force-cache'});
+    if(!r.ok)throw new Error('Failed');
+    const d=await r.json();mvCache[path]=d;renderMvGrid(d);
+  }catch(e){if(e.name!=='AbortError')mvSetStatus('Error loading.');}
+}
+
+function renderMvGrid(data){
+  var grid=document.getElementById('mvGrid');grid.innerHTML='';grid.style.pointerEvents='auto';
+  var items=data.results||[];
+  if(!items.length){mvSetStatus('Nothing found.');return;}
+  items.forEach(function(item){
+    var title=item.title||item.name||'Untitled';
+    var date=item.release_date||item.first_air_date||'';
+    var year=date?new Date(date).getFullYear():'';
+    var rating=item.vote_average?'★ '+item.vote_average.toFixed(1):'';
+    var poster=item.poster_path?TMDB_IMG+item.poster_path:'';
+    var card=document.createElement('div');card.className='mcard';card.style.cursor='pointer';
+    var thumb=document.createElement('div');thumb.className='mthumb';thumb.style.cssText='padding:0;height:90px;overflow:hidden;background:rgba(0,0,0,.7);position:relative;';
+    if(poster){var img=document.createElement('img');img.src=poster;img.alt=title;img.loading='lazy';img.decoding='async';img.style.cssText='width:100%;height:100%;object-fit:cover;';img.onerror=function(){thumb.innerHTML='<span style="font-size:1.8rem;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">🎬</span>';};thumb.appendChild(img);}
+    else{thumb.innerHTML='<span style="font-size:1.8rem;">🎬</span>';}
+    if(rating){var badge=document.createElement('span');badge.innerHTML=rating;badge.style.cssText='position:absolute;bottom:4px;right:5px;font-size:.58rem;background:rgba(0,0,0,0.85);padding:2px 5px;border-radius:6px;color:var(--primary);';thumb.appendChild(badge);}
+    var info=document.createElement('div');info.className='minfo';
+    info.innerHTML='<div class="mtitle">'+esc(title)+'</div><div class="mmeta">'+(year?year+' · ':'')+( mvType==='movie'?'Movie':'TV')+'</div>';
+    card.appendChild(thumb);card.appendChild(info);
+    card.addEventListener('click',(function(id,type){return function(){playMovie(id,type);};})(item.id,mvType));
+    grid.appendChild(card);
+  });
+  mvSetStatus(items.length+' results · page '+mvCurPage);
+}
+
+function mvSwitchTab(type){
+  mvType=type;mvCurPage=1;mvQuery='';
+  var si=document.getElementById('mvSearchInput');if(si)si.value='';
+  document.getElementById('mvTabMovies').classList.toggle('active',type==='movie');
+  document.getElementById('mvTabTV').classList.toggle('active',type==='tv');
+  document.getElementById('mvPageLbl').textContent='Page 1';
+  mvLoaded=true;doMvLoad();
+}
+function mvPage(dir){if(dir===-1&&mvCurPage<=1)return;mvCurPage+=dir;document.getElementById('mvPageLbl').textContent='Page '+mvCurPage;mvLoaded=true;doMvLoad();}
+
+// Movie search input
+document.addEventListener('DOMContentLoaded',function(){
+  var si=document.getElementById('mvSearchInput');
+  if(si) si.addEventListener('input',function(){mvQuery=this.value;mvCurPage=1;mvLoaded=true;clearTimeout(mvDebounce);mvDebounce=setTimeout(doMvLoad,260);});
+});
+
+// ── Rotating tagline ───────────────────────────────────────────────────────
+(function(){
+  const msgs=[
+    "A Time Machine for Everything",
+    "shoutout to utopia and aspen",
+    "made with love by bored middle schoolers",
+    "goonguardian & freakurely",
+    "better than kahoot, blooket, and gimkit",
+    "POV: 6th grade s.s. class",
+    "if ur school blocks this... be proactive (and don't)",
+    "clock it twin",
+    "bro not my problem if you get in trouble",
+    "print(\"Hello, World!\")",
+    "why are you even reading this",
+    "epoch — where every era is now"
+  ];
+  let idx=0;
+  function rotate(){
+    const el=document.getElementById('rotating-tagline');
+    if(!el)return;
+    el.style.opacity=0;
+    setTimeout(()=>{idx=(idx+1)%msgs.length;el.textContent=msgs[idx];el.style.opacity=1;},600);
+  }
+  window.addEventListener('load',()=>setInterval(rotate,4000));
+})();
+
+(function(){
+  const msgs=[
+    "made with love by bored middle schoolers, for everyone else",
+    "shoutout to utopia and aspen",
+    "goonguardian & freakurely",
+    "better than kahoot, blooket, and gimkit",
+    "with the power of proxies",
+    "props to t-hops",
+    "join our discord server",
+    "we're not responsible if you get in trouble lol",
+    "check out capticlient-pybricks-custom-client.pages.dev",
+    "why are you even reading this"
+  ];
+  let idx=0;
+  function rotate(){
+    const el=document.getElementById('rotating-footer');
+    if(!el)return;
+    el.style.opacity=0;
+    setTimeout(()=>{idx=(idx+1)%msgs.length;el.innerHTML=msgs[idx];el.style.opacity=1;},600);
+  }
+  window.addEventListener('load',()=>setInterval(rotate,4000));
+})();
+</script>
+</body>
+</html>
